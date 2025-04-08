@@ -1,0 +1,232 @@
+
+{% extends "layout.html" %}  
+
+{% block content %}  
+<!-- Sayfa başlığı ve geri dön butonu - düzeltilmiş düzen -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="page-title fs-4 fw-bold mb-0">Servis Düzenle</h2>
+            <a href="{{ url_for('view_service', service_id=service.id) }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Geri Dön
+            </a>
+        </div>
+        <p class="text-muted mb-0">{{ service.tracking_number }}</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form action="{{ url_for('edit_service', service_id=service.id) }}" method="post" enctype="multipart/form-data">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="company_name" class="form-label">Firma Adı</label>
+                        <input type="text" class="form-control" id="company_name" name="company_name" value="{{ service.company_name }}" required>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Durum</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="Beklemede" {% if service.status == 'Beklemede' %}selected{% endif %}>Beklemede</option>
+                            <option value="Tamir Edildi" {% if service.status == 'Tamir Edildi' %}selected{% endif %}>Tamir Edildi</option>
+                            <option value="İptal Edildi" {% if service.status == 'İptal Edildi' %}selected{% endif %}>İptal Edildi</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="customer_complaint" class="form-label">Müşteri Şikayeti</label>
+                <textarea class="form-control" id="customer_complaint" name="customer_complaint" rows="3" required>{{ service.customer_complaint }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="service_note" class="form-label">Teknik Servis Notu</label>
+                <textarea class="form-control" id="service_note" name="service_note" rows="3">{{ service.service_note }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="repair_description" class="form-label">Yapılan Tamir Açıklaması</label>
+                <textarea class="form-control" id="repair_description" name="repair_description" rows="3">{{ service.repair_description }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="requested_amount" class="form-label">Talep Edilen Tutar (TL)</label>
+                <input type="number" class="form-control" id="requested_amount" name="requested_amount" step="0.01" value="{{ service.requested_amount or '' }}">
+            </div>
+
+            <div class="mb-4">
+                <label for="images" class="form-label">Yeni Fotoğraflar Ekle (İsteğe Bağlı)</label>
+                <input class="form-control" type="file" id="images" name="images" accept="image/*" multiple>
+                <div id="imagePreview" class="mt-2 d-flex flex-wrap" style="display: none;"></div>
+            </div>
+
+            <div class="mb-4">
+                <label for="videos" class="form-label">Yeni Videolar Ekle (İsteğe Bağlı)</label>
+                <input class="form-control" type="file" id="videos" name="videos" accept="video/*" multiple>
+                <div id="videoPreview" class="mt-2 d-flex flex-wrap" style="display: none;"></div>
+            </div>
+
+            {% if service.media %}
+                <div class="mb-4">
+                    <h5 class="fs-5 fw-semibold mb-3">Mevcut Medya Dosyaları</h5>
+                    <div class="row g-2 g-md-3">
+                        {% for media in service.media %}
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <div class="card h-100">
+                                    <div class="card-body p-2 d-flex flex-column align-items-center">
+                                        {% if media.file_type == 'image' %}
+                                            <div class="w-100 mb-2 text-center media-preview-container" style="height: 120px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                                <img src="{{ url_for('uploaded_file', folder='images', filename=media.filename) }}" class="rounded" alt="Servis Fotoğrafı" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                                            </div>
+                                        {% elif media.file_type == 'video' %}
+                                            <div class="w-100 mb-2 media-preview-container" style="height: 120px; overflow: hidden;">
+                                                <video controls class="rounded w-100 h-100" style="object-fit: cover;">
+                                                    <source src="{{ url_for('uploaded_file', folder='videos', filename=media.filename) }}" type="video/mp4">
+                                                    Tarayıcınız video etiketini desteklemiyor.
+                                                </video>
+                                            </div>
+                                        {% endif %}
+                                        <!-- Delete button optimized for mobile -->
+                                        <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-auto" data-bs-toggle="modal" data-bs-target="#deleteMediaModal{{ media.id }}">
+                                            <i class="fas fa-trash me-1"></i> Sil
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Mobil için buton düzeni -->
+            <div class="d-grid gap-3 mt-4">
+                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-end">
+                    <a href="{{ url_for('view_service', service_id=service.id) }}" class="btn btn-outline-secondary">İptal</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Kaydet
+                    </button>
+                </div>
+
+                <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#deleteServiceModal">
+                    <i class="fas fa-trash me-1"></i> Servis Kaydını Sil
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Silme Onay Modalı -->
+<div class="modal fade" id="deleteServiceModal" tabindex="-1" aria-labelledby="deleteServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteServiceModalLabel">Servis Kaydını Sil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <span class="display-1 text-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                </div>
+                <p class="text-center">
+                    <strong>{{ service.tracking_number }}</strong> numaralı servis kaydını silmek istediğinize emin misiniz?
+                </p>
+                <p class="text-center text-muted small">
+                    Bu işlem geri alınamaz ve tüm medya dosyaları da silinecektir.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">İptal</button>
+                <form action="{{ url_for('delete_service', service_id=service.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Media Delete Modals - OUTSIDE the main form -->
+{% if service.media %}
+    {% for media in service.media %}
+        <div class="modal fade" id="deleteMediaModal{{ media.id }}" tabindex="-1" aria-labelledby="deleteMediaModalLabel{{ media.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteMediaModalLabel{{ media.id }}">Medya Dosyasını Sil</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-center">Bu dosyayı silmek istediğinize emin misiniz?</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">İptal</button>
+                        <form action="{{ url_for('delete_media', media_id=media.id) }}" method="post">
+                            <button type="submit" class="btn btn-danger">Sil</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<style>
+    /* Responsive form styles */
+    @media (max-width: 576px) {
+        .form-group .btn,
+        .d-grid .btn {
+            margin-bottom: 0.5rem;
+            padding: 0.6rem 1rem;
+        }
+
+        .modal-footer .btn {
+            width: auto;
+            margin-bottom: 0;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .media-preview-container {
+            height: 100px !important;
+        }
+    }
+
+    /* iPhone specific adjustments */
+    @media (max-width: 430px) {
+        .form-control, .form-select {
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+
+        .media-preview-container {
+            height: 90px !important;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+        }
+    }
+    
+    /* Ensure fixed height for media preview container */
+    .media-preview-container {
+        position: relative;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+    }
+    
+    /* Media grid spacing */
+    .row.g-2 > [class*="col-"] {
+        padding: 0.375rem !important;
+    }
+</style>
+{% endblock %}

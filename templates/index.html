@@ -1,0 +1,205 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Header benzeti - Card içinde gösterim -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="page-title fs-4 fw-bold mb-0">Servis Kayıtları</h2>
+            <a href="{{ url_for('new_service') }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i> Yeni Servis Kaydı
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if services %}
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Takip No</th>
+                        <th>Firma</th>
+                        <th>Durum</th>
+                        <th>Tarih</th>
+                        <th class="text-end">İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td>
+                            <span class="fw-medium">{{ service.tracking_number }}</span>
+                        </td>
+                        <td>{{ service.company_name }}</td>
+                        <td>
+                            {% if service.status == 'Beklemede' %}
+                                <span class="badge bg-warning">Beklemede</span>
+                            {% elif service.status == 'Tamir Edildi' %}
+                                <span class="badge bg-success">Tamir Edildi</span>
+                            {% elif service.status == 'İptal Edildi' %}
+                                <span class="badge bg-danger">İptal Edildi</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ service.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ service.created_at|format_date }}</td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                <a href="{{ url_for('view_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ service.id }}" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Mobil görünüm için liste kartları (Küçük ekranlarda tablo yerine gösterilir) -->
+    <div class="d-md-none mt-4">
+        <div class="row g-3">
+            {% for service in services %}
+                <div class="col-12">
+                    <div class="card service-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h5 class="fw-bold mb-0">{{ service.tracking_number }}</h5>
+                                {% if service.status == 'Beklemede' %}
+                                    <span class="badge bg-warning">Beklemede</span>
+                                {% elif service.status == 'Tamir Edildi' %}
+                                    <span class="badge bg-success">Tamir Edildi</span>
+                                {% elif service.status == 'İptal Edildi' %}
+                                    <span class="badge bg-danger">İptal Edildi</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ service.status }}</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="mb-1"><strong>Firma:</strong> {{ service.company_name }}</p>
+                            <p class="mb-3"><strong>Tarih:</strong> {{ service.created_at|format_date }}</p>
+
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{{ url_for('view_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary" title="Görüntüle">
+                                    <i class="fas fa-eye me-1"></i> Görüntüle
+                                </a>
+                                <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-outline-primary" title="Düzenle">
+                                    <i class="fas fa-edit me-1"></i> Düzenle
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{ service.id }}" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Silme Onay Modalları - Ana tablo dışına taşındı -->
+    {% for service in services %}
+    <div class="modal fade" id="deleteModal-{{ service.id }}" tabindex="-1" aria-labelledby="deleteModalLabel-{{ service.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel-{{ service.id }}">Servis Kaydını Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <span class="display-1 text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                    </div>
+                    <p>
+                        <strong>{{ service.tracking_number }}</strong> numaralı servis kaydını silmek istediğinize emin misiniz?
+                    </p>
+                    <p class="text-muted small">
+                        Bu işlem geri alınamaz.
+                    </p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">İptal</button>
+                    <form action="{{ url_for('delete_service', service_id=service.id) }}" method="post">
+                        <button type="submit" class="btn btn-danger">Sil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5 d-flex flex-column align-items-center justify-content-center" style="min-height: 350px;">
+            <div class="mb-4">
+                <i class="fas fa-clipboard-list text-muted fa-4x"></i>
+            </div>
+            <h5 class="mb-3">Henüz kayıtlı servis bulunmamaktadır</h5>
+            <p class="text-muted mb-4">
+                Yeni bir servis kaydı eklemek için "Yeni Servis Kaydı" düğmesine tıklayın.
+            </p>
+            <a href="{{ url_for('new_service') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Yeni Servis Kaydı
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<style>
+    /* Mobil uyumlu tablo/kart ayarları */
+    @media (max-width: 767px) {
+        .table-responsive {
+            display: none; /* Mobilde tabloyu gizle */
+        }
+
+        .service-card {
+            transition: transform 0.2s;
+        }
+
+        .service-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-sm {
+            padding: 0.375rem 0.5rem;
+        }
+    }
+
+    /* iPhone (küçük ekranlar) için özel ayarlar */
+    @media (max-width: 430px) {
+        .page-title {
+            font-size: 1.25rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .d-flex.justify-content-end.gap-2 {
+            flex-wrap: wrap;
+        }
+
+        .d-flex.justify-content-end.gap-2 .btn {
+            flex: 1 0 auto;
+            margin-bottom: 0.25rem;
+            text-align: center;
+        }
+    }
+</style>
+{% endblock %}

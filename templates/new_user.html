@@ -1,0 +1,63 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">Yeni Kullanıcı Ekle</h2>
+    <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Geri Dön
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Kullanıcı Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('new_user') }}" method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Kullanıcı Adı</label>
+                        <input type="text" class="form-control" id="username" name="username" required autofocus>
+                        <div class="form-text text-muted">
+                            Kullanıcı adı benzersiz olmalıdır ve daha sonra değiştirilemez.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Şifre</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text text-muted">
+                            Şifre en az 6 karakter olmalıdır.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Ad Soyad</label>
+                        <input type="text" class="form-control" id="name" name="name">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="role" class="form-label">Kullanıcı Rolü</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="personel">Personel</option>
+                            <option value="admin">Yönetici</option>
+                        </select>
+                        <div class="form-text text-muted">
+                            Yöneticiler tüm işlemleri yapabilir ve kullanıcıları yönetebilir.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('list_users') }}" class="btn btn-outline-secondary me-md-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-1"></i> Kullanıcı Ekle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

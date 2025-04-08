@@ -1,0 +1,58 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title mb-0">Yeni Servis Kaydı</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Geri Dön
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Servis Bilgileri</h5>
+    </div>
+    <div class="card-body">
+        <form action="{{ url_for('new_service') }}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="company_name" class="form-label">Firma Adı</label>
+                <input type="text" class="form-control" id="company_name" name="company_name" required autofocus>
+            </div>
+
+            <div class="mb-3">
+                <label for="customer_complaint" class="form-label">Müşteri Şikayeti</label>
+                <textarea class="form-control" id="customer_complaint" name="customer_complaint" rows="4" required></textarea>
+                <div class="form-text text-muted">
+                    Müşteri tarafından bildirilen sorunu detaylı olarak açıklayın.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="images" class="form-label">Fotoğraflar (İsteğe Bağlı)</label>
+                <input class="form-control" type="file" id="images" name="images" accept="image/*" multiple>
+                <div id="imagePreview" class="mt-2 d-flex flex-wrap" style="display: none;"></div>
+                <div class="form-text text-muted">
+                    Arıza veya cihaz durumunu gösteren fotoğraflar ekleyebilirsiniz. (Maksimum 16MB)
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="videos" class="form-label">Videolar (İsteğe Bağlı)</label>
+                <input class="form-control" type="file" id="videos" name="videos" accept="video/*" multiple>
+                <div id="videoPreview" class="mt-2 d-flex flex-wrap" style="display: none;"></div>
+                <div class="form-text text-muted">
+                    Arıza veya cihaz çalışmasını gösteren videolar ekleyebilirsiniz. (Maksimum 16MB)
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary me-md-2">İptal</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

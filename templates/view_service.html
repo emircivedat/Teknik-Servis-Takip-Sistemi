@@ -1,0 +1,302 @@
+
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Header bölümünü card içine alarak diğer sayfalarla benzeştirme -->
+<div class="card mb-4">
+    <div class="card-body py-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div class="mb-3 mb-md-0">
+                <h2 class="page-title fs-4 fw-bold mb-0">Servis Detayı</h2>
+                <p class="text-muted mb-0">{{ service.tracking_number }}</p>
+            </div>
+            <div class="d-flex flex-column flex-sm-row gap-2">
+                <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i> Durum Güncelle
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i> Geri
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Servis Bilgileri Kartı -->
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-semibold">Servis Bilgileri</h5>
+                <div>
+                    {% if service.status == 'Beklemede' %}
+                        <span class="badge bg-warning">Beklemede</span>
+                    {% elif service.status == 'Tamir Edildi' %}
+                        <span class="badge bg-success">Tamir Edildi</span>
+                    {% elif service.status == 'İptal Edildi' %}
+                        <span class="badge bg-danger">İptal Edildi</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ service.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4 g-3">
+                    <div class="col-md-6">
+                        <h6 class="fw-medium text-muted mb-2">Firma Adı</h6>
+                        <p class="fs-5">{{ service.company_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-medium text-muted mb-2">Oluşturulma Tarihi</h6>
+                        <p>{{ service.created_at|format_date }}</p>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-medium text-muted mb-2">Müşteri Şikayeti</h6>
+                    <div class="p-3 bg-light rounded-3">
+                        <p class="mb-0">{{ service.customer_complaint }}</p>
+                    </div>
+                </div>
+
+                {% if service.service_note %}
+                    <div class="mb-4">
+                        <h6 class="fw-medium text-muted mb-2">Teknik Servis Notu</h6>
+                        <div class="p-3 bg-light rounded-3">
+                            <p class="mb-0">{{ service.service_note }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if service.repair_description %}
+                    <div class="mb-4">
+                        <h6 class="fw-medium text-muted mb-2">Yapılan Tamir Açıklaması</h6>
+                        <div class="p-3 bg-light rounded-3">
+                            <p class="mb-0">{{ service.repair_description }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if service.requested_amount %}
+                    <div class="mb-4">
+                        <h6 class="fw-medium text-muted mb-2">Talep Edilen Tutar</h6>
+                        <p class="fs-4 fw-bold text-primary">
+                            {{ "%.2f"|format(service.requested_amount|float)|replace(',', '#')|replace('.', ',')|replace('#', '.') }} TL
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Servis Durumu Kartı -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0 fw-semibold">Servis Durumu</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0 me-3">
+                        {% if service.status == 'Beklemede' %}
+                            <span class="d-inline-block bg-warning rounded-circle p-3">
+                                <i class="fas fa-clock text-white fa-lg"></i>
+                            </span>
+                        {% elif service.status == 'Tamir Edildi' %}
+                            <span class="d-inline-block bg-success rounded-circle p-3">
+                                <i class="fas fa-check text-white fa-lg"></i>
+                            </span>
+                        {% elif service.status == 'İptal Edildi' %}
+                            <span class="d-inline-block bg-danger rounded-circle p-3">
+                                <i class="fas fa-times text-white fa-lg"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-grow-1">
+                        <h5 class="mb-1">{{ service.status }}</h5>
+                        <p class="text-muted mb-0">Son Güncelleme: {{ service.updated_at|format_date }}</p>
+                    </div>
+                </div>
+
+                <div class="timeline mt-4">
+                    <div class="timeline-item">
+                        <div class="timeline-indicator bg-primary"></div>
+                        <div class="timeline-content pb-4">
+                            <div class="d-flex justify-content-between flex-wrap">
+                                <span class="fw-medium">Servis Kaydı Oluşturuldu</span>
+                                <small class="text-muted">{{ service.created_at|format_date }}</small>
+                            </div>
+                            <p class="text-muted small mb-0">Müşteri şikayeti alındı ve servis kaydı oluşturuldu.</p>
+                        </div>
+                    </div>
+
+                    {% if service.service_note %}
+                    <div class="timeline-item">
+                        <div class="timeline-indicator bg-info"></div>
+                        <div class="timeline-content pb-4">
+                            <div class="d-flex justify-content-between flex-wrap">
+                                <span class="fw-medium">Teknik Servis Notu Eklendi</span>
+                                <small class="text-muted">{{ service.updated_at|format_date }}</small>
+                            </div>
+                            <p class="text-muted small mb-0">Teknik servis notu eklendi.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if service.status != 'Beklemede' %}
+                    <div class="timeline-item">
+                        <div class="timeline-indicator {{ 'bg-success' if service.status == 'Tamir Edildi' else 'bg-danger' }}"></div>
+                        <div class="timeline-content">
+                            <div class="d-flex justify-content-between flex-wrap">
+                                <span class="fw-medium">Durum Güncellendi</span>
+                                <small class="text-muted">{{ service.updated_at|format_date }}</small>
+                            </div>
+                            <p class="text-muted small mb-0">
+                                Servis kaydı
+                                {% if service.status == 'Tamir Edildi' %}
+                                    tamir edildi olarak işaretlendi.
+                                {% else %}
+                                    iptal edildi olarak işaretlendi.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Medya Dosyaları Kartı -->
+{% if service.media %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0 fw-semibold">Medya Dosyaları</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for media in service.media %}
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                    <div class="card h-100 media-card">
+                        <div class="card-body p-2 text-center">
+                            {% if media.file_type == 'image' %}
+                                <div class="media-container mb-2" style="height: 160px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                    <a href="{{ url_for('uploaded_file', folder='images', filename=media.filename) }}" target="_blank" class="d-block w-100 h-100">
+                                        <img src="{{ url_for('uploaded_file', folder='images', filename=media.filename) }}" class="img-fluid rounded" alt="Servis Fotoğrafı" style="max-height: 100%; object-fit: contain;">
+                                    </a>
+                                </div>
+                            {% elif media.file_type == 'video' %}
+                                <div class="media-container mb-2" style="height: 160px; overflow: hidden;">
+                                    <video controls class="rounded w-100 h-100" style="object-fit: cover;">
+                                        <source src="{{ url_for('uploaded_file', folder='videos', filename=media.filename) }}" type="video/mp4">
+                                        Tarayıcınız video etiketini desteklemiyor.
+                                    </video>
+                                </div>
+                            {% endif %}
+                            <div class="mt-2">
+                                <small class="text-muted">{{ media.upload_date|format_date }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+    /* Timeline stili */
+    .timeline {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-left: 0.5rem;
+    }
+
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #e9ecef;
+    }
+
+    .timeline-item {
+        position: relative;
+    }
+
+    .timeline-indicator {
+        position: absolute;
+        left: -1.65rem;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #007AFF;
+        border: 2px solid white;
+    }
+
+    .timeline-content {
+        padding-bottom: 1.5rem;
+    }
+
+    /* Medya kartı hover efekti */
+    .media-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .media-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Mobil optimizasyonları */
+    @media (max-width: 767px) {
+        .page-title {
+            font-size: 1.25rem;
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .media-container {
+            height: 140px !important;
+        }
+
+        .timeline-content {
+            padding-bottom: 1rem;
+        }
+
+        .d-flex.flex-column.flex-sm-row.gap-2 .btn {
+            width: 100%;
+        }
+    }
+
+    /* iPhone iyileştirmeleri */
+    @media (max-width: 430px) {
+        .media-container {
+            height: 120px !important;
+        }
+
+        .fs-4 {
+            font-size: 1.25rem !important;
+        }
+
+        .fs-5 {
+            font-size: 1.15rem !important;
+        }
+
+        .card-header {
+            padding: 0.75rem 1rem;
+        }
+
+        .row.g-4 {
+            --bs-gutter-y: 1rem;
+        }
+    }
+</style>
+{% endblock %}
